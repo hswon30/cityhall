@@ -1,5 +1,4 @@
-#####Driver code for crawling address data from Kakaotalk group chat(PC), conversion into excel/csv#########
-import pywinauto
+#####Driver code for crawling address data from Kakaotalk group chat(PC), conversion into excel/csv########import pywinauto
 from pywinauto.application import Application as app
 from pywinauto import clipboard
 from pywinauto import keyboard
