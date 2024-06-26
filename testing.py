@@ -1,4 +1,8 @@
+import pywinauto
 import datetime
-
-current_time = datetime.datetime.now()
-print(str(current_time).split(" ")[0])
+from pywinauto.application import Application as app
+from pywinauto import clipboard
+from pywinauto import keyboard
+import time
+def testing():
+    pass
