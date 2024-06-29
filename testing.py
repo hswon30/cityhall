@@ -8,7 +8,7 @@ import os
 import re
 from geopy.geocoders import Nominatim
 from geopy.extra.rate_limiter import RateLimiter
-#import googlemaps
+import googlemaps
 from functools import partial
 import requests
 
@@ -54,13 +54,17 @@ def extract_addresses(chat_history):
     # for pair in date_address_pairs:
     #     print(pair)
 
+
 # Using google maps API(paid account)
 def geocoding_gmap(address):
     #import googlemaps
     gmaps = googlemaps.Client(key='Your_API_Key')
     geocode_result = gmaps.geocode(address)
-    locs = geocode_result[0]['geometry']['locations'] #{'lat' : x, 'lng' : y}
-    return locs
+
+    # {'lat' : x, 'lng' : y}
+    lat = geocode_result[0]['geometry']['locations']['lat']
+    lng = geocode_result[0]['geometry']['locations']['lon']
+    return lat, lng
 
 # Using free geopy(limited functionality)
 def geocoding_geopy(address):
@@ -74,17 +78,22 @@ def geocoding_geopy(address):
         return loc.latitude, loc.longitude
     else:
         print(f"unable to code location: {address}")
+        return 0, 0
     # return loc.longitude, loc.latitude, address
 
 #Using kakao API(rate limited)
 def geocoding_kakao(address):
-    
+    url = 'https://dapi.kakao.com/v2/local/search/address'
+    auth = {'Authorization': 'KakaoAK ${REST_API_KEY}'}
+    query = {'query': f'{address}'}
+    try:
+        res = requests.get(url, auth, query).json()
+        lon, lat = res[0]['documents']['x'], res[0]['documents']['y'] #경도, 위도 순으로 나타남
+        return lat, lon #위도경도 순으로 리턴하기
+    except:
+        print("This request cannot be processed by the server, please try again")
+        return 0, 0
 
-
-
-chatrec = read_chat_history(fullpath)
-addresses = extract_addresses(chatrec)
-locex = geocoding_geopy("성복 2로 86")
 
 #https://velog.io/@s0young/Troubleshooting-GeoPy%EC%9D%98-geocoding-%EC%B2%98%EB%A6%AC-%EC%86%8D%EB%8F%84%EB%8A%94-%EC%99%9C-%EB%8A%90%EB%A6%B4%EA%B9%8C
 # https://m.blog.naver.com/rackhunson/222403071709
