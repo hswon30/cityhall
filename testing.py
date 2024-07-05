@@ -86,7 +86,7 @@ def geocoding_geopy(address):
 #Using kakao API(rate limited)
 def geocoding_kakao(address):
     url = f'https://dapi.kakao.com/v2/local/search/address.json?query={address}'
-    auth = {'Authorization': 'KakaoAK'}
+    auth = {'Authorization': 'KakaoAK{API_KEY}'}
     # query = {'query': f'{address}'}
     try:
         time.sleep(1)
