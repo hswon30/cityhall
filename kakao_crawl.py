@@ -79,32 +79,34 @@ def read_chat_history(filename):
 
 
 def extract_addresses(chat_history):
-    # Define regex patterns for addresses and dates
-    address_pattern = re.compile(r'\[.*?\] \[.*?\] - (.*?)\n', re.MULTILINE)
+    if not chat_history:
+        print("Invalid chat history provided or no chat to extract data")
+        return 0
 
     address_patterns = [
         r'\[.*?\] \[.*?\] 1\.\s*(.*)',
         r'\[.*?\] \[.*?\] -\s*(.*)',
         r'\[.*?\] \[.*?\] 위반장소 -\s*(.*)',
-        r'\[.*?\] \[.*?\] 1\.\위반장소\s*\-\s*(.*)'
-        r'\[.*?\] \[.*?\] -\s*\위반장소\s*\-\s*(.*)'
+        r'\[.*?\] \[.*?\] 1\.위반장소\s*-\s*(.*)',
+        r'\[.*?\] \[.*?\] -\s*위반장소\s*-\s*(.*)',
     ]
-
-    date_pattern = re.compile(r'--------------- (\d{4}년 \d{1,2}월 \d{1,2}일 .*?) ---------------')
-
-    # dates = date_pattern.findall(chat_history)
 
     addresses = []
 
-    for pattern in address_patterns:
-        matches = re.findall(pattern, chat_history, re.MULTILINE)
-        addresses.extend(matches)
+    rf_pattern = r'([^\(]+)'
+
+    for line in chat_history.strip().split('\n'):
+        for pattern in address_patterns:
+            match = re.search(pattern, line)
+            if match:
+                address = match.group(1).strip()
+                refined_match = re.search(rf_pattern, address)
+                if refined_match:
+                    address = refined_match.group(1).strip()
+                    cleaned_address = address.replace("위반장소 -", "").strip()
+                    addresses.append(cleaned_address)
 
     return addresses
-    # date_address_pairs = list(zip(dates, addresses))
-    #
-    # for pair in date_address_pairs:
-    #     print(pair)
 
 
 ######################################GEOCODING FUNCTIONS-USE AS DESIRED#############################################
@@ -170,7 +172,7 @@ def main():
 
     res = pd.DataFrame(data)
 
-    csv_filename = os.path.join('geocoding_sample_2.csv')
+    csv_filename = f'{current}_geocoded'
     res.to_csv(csv_filename, index=True, index_label="index")
     print(f"Geocoded csv {csv_filename} completed")
 
