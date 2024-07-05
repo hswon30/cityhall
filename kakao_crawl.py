@@ -111,7 +111,7 @@ def extract_addresses(chat_history):
 
 # Using google maps API(paid account)
 def geocoding_gmap(address):
-    # import googlemaps
+    #import googlemaps
     gmaps = googlemaps.Client(key='Your_API_Key')
     geocode_result = gmaps.geocode(address)
 
@@ -119,7 +119,6 @@ def geocoding_gmap(address):
     lat = geocode_result[0]['geometry']['locations']['lat']
     lng = geocode_result[0]['geometry']['locations']['lon']
     return lat, lng
-
 
 # Using free geopy(limited functionality)
 def geocoding_geopy(address):
@@ -171,7 +170,7 @@ def main():
 
     res = pd.DataFrame(data)
 
-    csv_filename = os.path.join(filepath, 'address_geocoded.csv')
+    csv_filename = os.path.join('geocoding_sample_2.csv')
     res.to_csv(csv_filename, index=True, index_label="index")
     print(f"Geocoded csv {csv_filename} completed")
 

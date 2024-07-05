@@ -11,6 +11,8 @@ from geopy.extra.rate_limiter import RateLimiter
 import googlemaps
 from functools import partial
 import requests
+import json
+import pandas as pd
 
 
 filepath = 'C:\\Users\\user\\Downloads\\Telegram Desktop'
@@ -83,17 +85,41 @@ def geocoding_geopy(address):
 
 #Using kakao API(rate limited)
 def geocoding_kakao(address):
-    url = 'https://dapi.kakao.com/v2/local/search/address'
-    auth = {'Authorization': 'KakaoAK ${REST_API_KEY}'}
-    query = {'query': f'{address}'}
+    url = f'https://dapi.kakao.com/v2/local/search/address.json?query={address}'
+    auth = {'Authorization': 'KakaoAK 83ca70aa0cffa452d24e6706d0389b73'}
+    # query = {'query': f'{address}'}
     try:
-        res = requests.get(url, auth, query).json()
-        lon, lat = res[0]['documents']['x'], res[0]['documents']['y'] #경도, 위도 순으로 나타남
-        return lat, lon #위도경도 순으로 리턴하기
+        time.sleep(1)
+        res = requests.get(url, headers=auth).json()
+        print("kakao query processed")
+        lon, lat = res['documents'][0]['x'], res['documents'][0]['y']
+        return lat, lon
+
+        # print(f'address: {address} found: lat{lat}, lon{lon}')
+        # return lat, lon #위도경도 순으로 리턴하기
     except:
-        print("This request cannot be processed by the server, please try again")
+        print(f"This {address} request cannot be processed by the server, please try again")
         return 0, 0
 
+geocoding_kakao("수지구 수지로124성복스퀘어입니다")
+geocoding_kakao("처인구 금학로 241번길")
+
+
+chat = read_chat_history(fullpath)
+addresses = extract_addresses(chat)
+
+data = []
+for address in addresses:
+    lat, lon = geocoding_kakao(address)
+    data.append({'address': address, 'latitude': lat, 'longitude': lon})
+
+res = pd.DataFrame(data)
+
+res.head(10)
+
+csv_filename = 'geocoding_sample_2.csv'
+res.to_csv(csv_filename, index=True, index_label="index")
+print(f"Geocoded csv {csv_filename} completed")
 
 #https://velog.io/@s0young/Troubleshooting-GeoPy%EC%9D%98-geocoding-%EC%B2%98%EB%A6%AC-%EC%86%8D%EB%8F%84%EB%8A%94-%EC%99%9C-%EB%8A%90%EB%A6%B4%EA%B9%8C
 # https://m.blog.naver.com/rackhunson/222403071709
