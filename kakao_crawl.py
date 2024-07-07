@@ -1,9 +1,7 @@
-#####Driver code for crawling address data from Kakaotalk group chat(PC), conversion into excel/csv########import pywinauto
 # Imports
 import pywinauto
 import datetime
 from pywinauto.application import Application as app
-from pywinauto import clipboard
 from pywinauto import keyboard
 import time
 import os
@@ -77,7 +75,8 @@ def read_chat_history(filename):
         print(f'{filename}, found')
         return file.read()
 
-
+# 기록에서 주소 추출하기
+# Function extract addresses from the provided chat history
 def extract_addresses(chat_history):
     if not chat_history:
         print("Invalid chat history provided or no chat to extract data")
@@ -109,7 +108,7 @@ def extract_addresses(chat_history):
     return addresses
 
 
-######################################GEOCODING FUNCTIONS-USE AS DESIRED#############################################
+######################################GEOCODING FUNCTIONS-USE ONE DESIRED###############################################
 
 # Using google maps API(paid account)
 def geocoding_gmap(address):
@@ -117,7 +116,7 @@ def geocoding_gmap(address):
     gmaps = googlemaps.Client(key='Your_API_Key')
     geocode_result = gmaps.geocode(address)
 
-    # {'lat' : x, 'lng' : y}
+    # JSON {'lat' : x, 'lng' : y}
     lat = geocode_result[0]['geometry']['locations']['lat']
     lng = geocode_result[0]['geometry']['locations']['lon']
     return lat, lng
@@ -148,14 +147,11 @@ def geocoding_kakao(address):
         lon, lat = res[0]['documents']['x'], res[0]['documents']['y']  # 경도, 위도 순으로 나타남
         return lat, lon  # 위도경도 순으로 리턴하기
     except:
-        print("This request cannot be processed by the server, please try again")
+        print(f"This request for {address} cannot be processed by the server, please try again")
         return 0, 0
 
 
 ##################################################################################################################
-
-# now need to see pandas working to see if as expected
-
 
 # Driver code
 def main():
@@ -166,6 +162,8 @@ def main():
     addresses = extract_addresses(chat)
 
     data = []
+
+    #Use desired geocoding function
     for address in addresses:
         lat, lon = geocoding_geopy(address)
         data.append({'address': address, 'latitude': lat, 'longitude': lon})
@@ -180,4 +178,4 @@ def main():
 if __name__ == '__main__':
     while True:
         main()
-        time.sleep(60*60*24)
+        time.sleep(3600*24)
